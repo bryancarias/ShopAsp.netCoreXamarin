@@ -10,6 +10,7 @@
     using Microsoft.Extensions.DependencyInjection;
     using Data;
     using Data.Entities;
+    using Shop.Web.Helpers;
 
     public class Startup
     {
@@ -40,6 +41,10 @@
             });
 
             services.AddTransient<SeedDb>();
+
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IUserHelper, UserHelper>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
