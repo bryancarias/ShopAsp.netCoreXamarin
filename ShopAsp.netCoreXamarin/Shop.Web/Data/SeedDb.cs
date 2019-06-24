@@ -1,5 +1,6 @@
 ﻿namespace Shop.Web.Data
 {
+    using Microsoft.AspNetCore.Identity;
     using Shop.Web.Data.Entities;
     using System;
     using System.Linq;
@@ -8,35 +9,55 @@
     public class SeedDb
     {
         private readonly DataContext context;
+        private readonly UserManager<User> userManager;
         private readonly Random random;
 
-        public SeedDb(DataContext context)
+        public SeedDb(DataContext context, UserManager<User> userManager)
         {
             this.context = context;
+            this.userManager = userManager;
             this.random = new Random();
         }
 
         public async Task SeedAsync()
         {
             await this.context.Database.EnsureCreatedAsync();
+            var user = await this.userManager.FindByEmailAsync("bcarias84@gmail.com");
+            if (user == null)
+            {
+                user = new User
+                {
+                    FistName = "Bryan",
+                    LastName = "Carias",
+                    Email = "bcarias84@gmail.com",
+                    UserName = "bcarias84@gmail.com"
+                };
 
+                var result = await this.userManager.CreateAsync(user, "123456");
+                if (result != IdentityResult.Success)
+                {
+                    throw new InvalidOperationException("Could not create the user in seeder");
+                }
+            }
+            //Add Product
             if (!this.context.Products.Any())
             {
-                this.AddProduct("Dell Inspiron 15");
-                this.AddProduct("Galaxy A10");
-                this.AddProduct("Intel Core i7");
+                this.AddProduct("Dell Inspiron 15",user);
+                this.AddProduct("Galaxy A10", user);
+                this.AddProduct("Intel Core i7", user);
                 await this.context.SaveChangesAsync();
             }
         }
 
-        private void AddProduct(string name)
+        private void AddProduct(string name,User user)
         {
             this.context.Products.Add(new Product
             {
                 Name = name,
                 Price = this.random.Next(1000),
                 IsAvailabe = true,
-                Stock = this.random.Next(100)
+                Stock = this.random.Next(100),
+                User = user
             });
         }
     }
