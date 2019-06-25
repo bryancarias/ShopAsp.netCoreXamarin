@@ -25,6 +25,12 @@
             this.configuration = configuration;
         }
 
+        public IActionResult NotAuthorized()
+        {
+            return this.View();
+        }
+
+
         public IActionResult Login()
         {
             if (this.User.Identity.IsAuthenticated)

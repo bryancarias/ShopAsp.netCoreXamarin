@@ -1,8 +1,5 @@
 ﻿namespace Shop.Web.Controllers
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
     using Data;
     using Data.Entities;
     using Helpers;
@@ -10,6 +7,9 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Models;
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
 
 
     public class ProductsController : Controller
@@ -23,6 +23,10 @@
             this.productRepository = productRepository;
             this.userHelper = userHelper;
         }
+        public IActionResult ProductNotFound()
+        {
+            return this.View();
+        }
 
         // GET: Products
         public IActionResult Index()
@@ -35,13 +39,13 @@
         {
             if (id == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             var product = await this.productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             return View(product);
@@ -109,13 +113,13 @@
         {
             if (id == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             var product = await this.productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
             var view = this.ToProducViewModel(product);
             return View(view);
@@ -172,7 +176,7 @@
                 {
                     if (!await this.productRepository.ExistAsync(view.Id))
                     {
-                        return NotFound();
+                        return new NotFoundViewResult("ProductNotFound");
                     }
                     else
                     {
@@ -191,13 +195,13 @@
         {
             if (id == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             var product = await this.productRepository.GetByIdAsync(id.Value);
             if (product == null)
             {
-                return NotFound();
+                return new NotFoundViewResult("ProductNotFound");
             }
 
             return View(product);
