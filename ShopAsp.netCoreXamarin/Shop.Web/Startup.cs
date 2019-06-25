@@ -11,6 +11,8 @@
     using Data;
     using Data.Entities;
     using Shop.Web.Helpers;
+    using Microsoft.IdentityModel.Tokens;
+    using System.Text;
 
     public class Startup
     {
@@ -34,6 +36,23 @@
                 cfg.Password.RequireUppercase = false;
             })
             .AddEntityFrameworkStores<DataContext>();
+            //Token
+            services.AddAuthentication()
+            .AddCookie()
+            .AddJwtBearer(cfg => { 
+
+                cfg.TokenValidationParameters = new TokenValidationParameters
+                { 
+
+
+                    ValidIssuer = this.Configuration["Tokens:Issuer"],
+                    ValidAudience = this.Configuration["Tokens:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(this.Configuration["Tokens:Key"]))
+                };
+            });
+
+
             //Injecticion a la db
             services.AddDbContext<DataContext>(cfg =>
             {
