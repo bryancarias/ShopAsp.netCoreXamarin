@@ -1,5 +1,6 @@
 ﻿namespace Shop.Web.Controllers
 {
+    using System;
     using System.IO;
     using System.Threading.Tasks;
     using Data;
@@ -10,7 +11,7 @@
     using Microsoft.EntityFrameworkCore;
     using Models;
 
-    [Authorize]
+
     public class ProductsController : Controller
     {
         private readonly IProductRepository productRepository;
@@ -47,6 +48,7 @@
         }
 
         // GET: Products/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -63,14 +65,17 @@
 
                 if (view.ImageFile != null && view.ImageFile.Length > 0)
                 {
-                    path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", view.ImageFile.FileName);
+                    var guid = Guid.NewGuid().ToString();
+                    var file = $"{guid}.jpg";
+
+                    path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", file);
 
                     using (var stream = new FileStream(path, FileMode.Create))
                     {
                         await view.ImageFile.CopyToAsync(stream);
                     }
 
-                    path = $"~/images/Products/{view.ImageFile.FileName}";
+                    path = $"~/images/Products/{file}";
                 }
                 view.User = await this.userHelper.GetUserByEmailAsync(this.User.Identity.Name);
                 var product = this.ToProduct(view, path);
@@ -99,6 +104,7 @@
 
 
         // GET: Products/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -145,14 +151,17 @@
 
                     if (view.ImageFile != null && view.ImageFile.Length > 0)
                     {
-                        path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", view.ImageFile.FileName);
+                        var guid = Guid.NewGuid().ToString();
+                        var file = $"{guid}.jpg";
+
+                        path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\Products", file);
 
                         using (var stream = new FileStream(path, FileMode.Create))
                         {
                             await view.ImageFile.CopyToAsync(stream);
                         }
 
-                        path = $"~/images/Products/{view.ImageFile.FileName}";
+                        path = $"~/images/Products/{file}";
                     }
 
                     view.User = await this.userHelper.GetUserByEmailAsync(this.User.Identity.Name);
@@ -177,6 +186,7 @@
         }
 
         // GET: Products/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

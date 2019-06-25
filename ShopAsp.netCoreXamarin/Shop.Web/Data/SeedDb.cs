@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Identity;
     using Shop.Web.Data.Entities;
+    using Shop.Web.Helpers;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -9,20 +10,25 @@
     public class SeedDb
     {
         private readonly DataContext context;
-        private readonly UserManager<User> userManager;
+        private readonly IUserHelper userHelper;
         private readonly Random random;
 
-        public SeedDb(DataContext context, UserManager<User> userManager)
+        public SeedDb(DataContext context, IUserHelper userHelper)
         {
             this.context = context;
-            this.userManager = userManager;
+            this.userHelper = userHelper;
             this.random = new Random();
         }
 
         public async Task SeedAsync()
         {
             await this.context.Database.EnsureCreatedAsync();
-            var user = await this.userManager.FindByEmailAsync("bcarias84@gmail.com");
+
+            await this.userHelper.CheckRoleAsync("Admin");
+            await this.userHelper.CheckRoleAsync("Customer");
+
+            // Add user
+            var user = await this.userHelper.GetUserByEmailAsync("bcarias84@gmail.com");
             if (user == null)
             {
                 user = new User
@@ -30,24 +36,35 @@
                     FistName = "Bryan",
                     LastName = "Carias",
                     Email = "bcarias84@gmail.com",
-                    UserName = "bcarias84@gmail.com"
+                    UserName = "bcarias84@gmail.com",
+                    PhoneNumber = "3506342747"
                 };
 
-                var result = await this.userManager.CreateAsync(user, "123456");
+                var result = await this.userHelper.AddUserAsync(user, "123456");
                 if (result != IdentityResult.Success)
                 {
                     throw new InvalidOperationException("Could not create the user in seeder");
                 }
+
+                await this.userHelper.AddUserToRoleAsync(user, "Admin");
             }
-            //Add Product
+
+            var isInRole = await this.userHelper.IsUserInRoleAsync(user, "Admin");
+            if (!isInRole)
+            {
+                await this.userHelper.AddUserToRoleAsync(user, "Admin");
+            }
+
+            // Add products
             if (!this.context.Products.Any())
             {
-                this.AddProduct("Dell Inspiron 15",user);
-                this.AddProduct("Galaxy A10", user);
-                this.AddProduct("Intel Core i7", user);
+                this.AddProduct("iPhone X", user);
+                this.AddProduct("Magic Mouse", user);
+                this.AddProduct("iWatch Series 4", user);
                 await this.context.SaveChangesAsync();
             }
         }
+
 
         private void AddProduct(string name,User user)
         {
